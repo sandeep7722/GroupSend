@@ -1,0 +1,46 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: cloud/Dockerfile.render
+    restart: unless-stopped
+    env_file: .oracle.env
+    environment:
+      PUBLIC_ORIGIN: https://${DOMAIN:?Set DOMAIN in .oracle.env}
+      PORT: '10000'
+      GROUPSEND_BROWSER_MODE: vps
+      MAX_WORKSPACES: '2'
+      MAX_USERS: '30'
+      TRUST_PROXY: '1'
+    cap_add:
+      - SYS_ADMIN
+    shm_size: 1gb
+    volumes:
+      - oracle_app_data:/data
+    expose:
+      - '10000'
+    stop_grace_period: 30s
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:10000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+  web:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .oracle.env}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./cloud/Caddyfile.oracle:/etc/caddy/Caddyfile:ro
+      - oracle_tls:/data
+      - oracle_caddy_config:/config
+volumes:
+  oracle_app_data:
+  oracle_tls:
+  oracle_caddy_config:

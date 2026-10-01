@@ -1,0 +1,11 @@
+# Apply after compose.local.yaml to reproduce the Oracle browser settings locally.
+services:
+  app:
+    environment:
+      GROUPSEND_BROWSER_MODE: vps
+      MAX_WORKSPACES: '2'
+    cap_add:
+      - SYS_ADMIN
+    shm_size: 1gb
+    mem_limit: 6g
+    cpus: 2

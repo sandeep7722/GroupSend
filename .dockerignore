@@ -10,3 +10,4 @@ work
 *.log
 .local-cloud
 .local-docker.env
+.oracle.env

@@ -7,3 +7,4 @@ cloud/.data/
 cloud/.env
 *.log
 .local-docker.env
+.oracle.env

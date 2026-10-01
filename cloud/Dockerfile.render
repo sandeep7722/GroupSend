@@ -1,5 +1,5 @@
 FROM node:24-bookworm-slim
-RUN apt-get update && apt-get install -y --no-install-recommends chromium xvfb xauth tini gosu ca-certificates fonts-liberation && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends chromium chromium-sandbox xvfb xauth tini gosu ca-certificates fonts-liberation && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production PUPPETEER_SKIP_DOWNLOAD=true GROUPSEND_CLOUD=1 GROUPSEND_BROWSER_MODE=render CHROME_PATH=/usr/bin/chromium CLOUD_DATA_DIR=/data/groupsend BIND_HOST=0.0.0.0
 WORKDIR /app
 COPY package.json package-lock.json ./

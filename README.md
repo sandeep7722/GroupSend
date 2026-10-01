@@ -2,6 +2,8 @@
 
 One account-based app for local use and Render deployment.
 
+**Oracle Cloud deployment:** see `ORACLE-DEPLOY.md`. It uses the same application code and container build, with Oracle-specific networking and saved storage configuration.
+
 - **Windows:** double-click `Start GroupSend Accounts.cmd`. The app opens on http://localhost:4321; generated login details open in Notepad.
 - **Render-like local testing:** start Docker Desktop with Linux containers, then double-click `Start Render Test Locally.cmd`. The same Dockerfile used on Render runs on http://localhost:4322.
 - **Render:** deploy `render.yaml` from your private repository. Set your owner email/password during setup.
