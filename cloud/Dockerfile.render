@@ -1,0 +1,11 @@
+FROM node:24-bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends chromium xvfb xauth tini gosu ca-certificates fonts-liberation && rm -rf /var/lib/apt/lists/*
+ENV NODE_ENV=production PUPPETEER_SKIP_DOWNLOAD=true GROUPSEND_CLOUD=1 GROUPSEND_BROWSER_MODE=render CHROME_PATH=/usr/bin/chromium CLOUD_DATA_DIR=/data/groupsend BIND_HOST=0.0.0.0
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+COPY server.js queue.js browser-config.js group-list.js connection.js send-text.js ./
+COPY public ./public
+COPY cloud ./cloud
+RUN sed -i 's/\r$//' cloud/render-entrypoint.sh && chmod +x cloud/render-entrypoint.sh
+ENTRYPOINT ["/usr/bin/tini", "--", "/app/cloud/render-entrypoint.sh"]

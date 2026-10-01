@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: groupsend
+    runtime: docker
+    plan: 1c-2g
+    dockerfilePath: ./cloud/Dockerfile.render
+    dockerContext: .
+    healthCheckPath: /health
+    numInstances: 1
+    disk:
+      name: groupsend-data
+      mountPath: /data
+      sizeGB: 5
+    envVars:
+      - key: OWNER_EMAIL
+        sync: false
+      - key: OWNER_PASSWORD
+        sync: false
+      - key: MAX_WORKSPACES
+        value: '1'
+      - key: MAX_USERS
+        value: '30'
+      - key: TRUST_PROXY
+        value: '1'

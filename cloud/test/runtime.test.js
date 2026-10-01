@@ -1,0 +1,32 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { Accounts } = require('../auth');
+const { runtimeConfig, bootstrapOwner } = require('../runtime');
+test('Render origin, port and bind address; explicit domain overrides default', () => {
+  const env = { RENDER: 'true', RENDER_EXTERNAL_URL: 'https://app.onrender.com', PORT: '10000', CLOUD_PORT: '8080' };
+  const config = runtimeConfig(env);
+  assert.equal(config.origin, env.RENDER_EXTERNAL_URL);
+  assert.equal(config.port, 10000);
+  assert.equal(config.host, '0.0.0.0');
+  assert.equal(runtimeConfig({ ...env, PUBLIC_ORIGIN: 'https://custom.example' }).origin, 'https://custom.example');
+  assert.throws(() => runtimeConfig({ ...env, PORT: 'invalid' }), /port/);
+});
+test('bootstrap owner is created once, credentials not inherited, persisted password not overwritten', async t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'groupsend-bootstrap-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const accounts = new Accounts(dir);
+  await assert.rejects(bootstrapOwner(accounts, {}), /OWNER_EMAIL/);
+  const env = { OWNER_EMAIL: 'owner@example.test', OWNER_PASSWORD: 'Private-initial-password' };
+  await bootstrapOwner(accounts, env);
+  assert.equal(env.OWNER_PASSWORD, undefined);
+  assert.equal(env.OWNER_EMAIL, undefined);
+  assert.equal(accounts.data.users[0].role, 'admin');
+  const restored = new Accounts(dir);
+  await bootstrapOwner(restored, { OWNER_EMAIL: 'other@example.test', OWNER_PASSWORD: 'Different-password' });
+  assert.equal(restored.data.users.length, 1);
+  assert.ok(await restored.login('owner@example.test', 'Private-initial-password'));
+  assert.equal(await restored.login('owner@example.test', 'Different-password'), null);
+});
